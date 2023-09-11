@@ -2,9 +2,12 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:untitled_2/firebase_options.dart';
+import 'package:untitled_2/presentation/pages/sign_up_page.dart';
+import 'package:untitled_2/utils/logger.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  Logger.configure();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -46,8 +49,9 @@ class _MyWidgetState extends State<MyWidget> {
       width: double.infinity,
       color: Colors.blue[100],
       child: const Center(
-        child: Text('Third Page'),
-        // LoginPage(),
+        child:
+            // Text('Third Page'),
+            SingUpPage(),
       ),
     ),
     Container(
