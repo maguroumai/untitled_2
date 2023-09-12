@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:untitled_2/model/repositories/firebase_auth/provider_credential.dart';
 
 import 'auth_provider_id.dart';
 import 'login_type.dart';
@@ -11,13 +13,15 @@ part 'firebase_auth_repository.g.dart';
 
 @Riverpod(keepAlive: true)
 FirebaseAuthRepository firebaseAuthRepository(FirebaseAuthRepositoryRef ref) {
-  return FirebaseAuthRepository(FirebaseAuth.instance);
+  return FirebaseAuthRepository(
+      FirebaseAuth.instance, GoogleSignIn(scopes: ['email']));
 }
 
 class FirebaseAuthRepository {
-  FirebaseAuthRepository(this._auth);
+  FirebaseAuthRepository(this._auth, this._googleSignIn);
 
   final FirebaseAuth _auth;
+  final GoogleSignIn _googleSignIn;
 
   Stream<User?> get onAuthStateChanged => _auth.authStateChanges();
 
@@ -38,6 +42,20 @@ class FirebaseAuthRepository {
   LoginType? get loginType {
     final user = _auth.currentUser;
     return user != null ? _loginType(user) : null;
+  }
+
+  Future<ProviderCredential?> get credentialOfGoogle async {
+    final googleUser = await _googleSignIn.signIn();
+    if (googleUser == null) {
+      return null;
+    }
+    final auth = await googleUser.authentication;
+    final result = GoogleAuthProvider.credential(
+      idToken: auth.idToken,
+      accessToken: auth.accessToken,
+    );
+
+    return ProviderCredential(result, googleUser.id);
   }
 
   Future<UserCredential> signInWithAnonymously() => _auth.signInAnonymously();
