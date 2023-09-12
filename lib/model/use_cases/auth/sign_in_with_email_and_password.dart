@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:untitled_2/exceptions%20/app_exception.dart';
+import 'package:untitled_2/exceptions/app_exception.dart';
 import 'package:untitled_2/model/repositories/firebase_auth/auth_error_code.dart';
 import 'package:untitled_2/model/repositories/firebase_auth/firebase_auth_repository.dart';
 import 'package:untitled_2/model/use_cases/auth/auth_state_controller.dart';

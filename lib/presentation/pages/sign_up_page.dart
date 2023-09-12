@@ -19,6 +19,9 @@ class SingUpPage extends HookConsumerWidget {
     final confirmPasswordFormFieldKey = useFormFieldStateKey();
 
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('登録'),
+      ),
       body: Center(
         child: Container(
           padding: const EdgeInsets.all(24),
