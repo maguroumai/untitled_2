@@ -1,10 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:untitled_2/model/entities/account/account.dart';
 import 'package:untitled_2/model/repositories/firebase_auth/firebase_auth_repository.dart';
 import 'package:untitled_2/model/repositories/firebase_auth/login_type.dart';
 import 'package:untitled_2/model/repositories/firestore/document.dart';
 import 'package:untitled_2/model/repositories/firestore/document_repository.dart';
-import 'package:untitled_2/model/use_cases/auth/auth_state_controller.dart';
 import 'package:untitled_2/utils/logger.dart';
 
 final signInWithAccount = Provider(SignInWithAccount.new);
@@ -22,6 +22,10 @@ class SignInWithAccount {
       final providerCredential = await Future(() async {
         if (loginType == LoginType.google) {
           return firebaseAuthRepository.credentialOfGoogle;
+        } else if (loginType == LoginType.email) {
+          Provider.autoDispose<String?>((ref) {
+            return ref.read(firebaseAuthRepositoryProvider).authUser?.email;
+          });
         }
         return null;
       });
@@ -57,9 +61,15 @@ class SignInWithAccount {
           decode: Account.fromJson,
         );
         if (!account.exists) {
-          _ref.read(authStateControllerProvider);
-          return account;
+          final newAccount = Account(accountId: userId);
+
+          final batch = documentRepository.batch
+            ..set(Document.docRef(Account.docPath(userId)), newAccount.toDoc(),
+                SetOptions(merge: true));
+          await batch.commit();
+          account.copyWith(newAccount);
         }
+        return account;
       });
     } on Exception catch (e) {
       logger.shout(e);

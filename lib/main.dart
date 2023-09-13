@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:untitled_2/firebase_options.dart';
+import 'package:untitled_2/presentation/pages/account_page.dart';
 import 'package:untitled_2/presentation/pages/sign_in_page.dart';
 import 'package:untitled_2/presentation/pages/sign_up_page.dart';
 import 'package:untitled_2/utils/logger.dart';
@@ -61,6 +62,14 @@ class _MyWidgetState extends State<MyWidget> {
         child: SingInPage(),
       ),
     ),
+    Container(
+      height: double.infinity,
+      width: double.infinity,
+      color: Colors.green[100],
+      child: const Center(
+        child: AccountPage(),
+      ),
+    ),
   ];
 
   @override
@@ -82,6 +91,11 @@ class _MyWidgetState extends State<MyWidget> {
             selectedIcon: Icon(Icons.login),
             icon: Icon(Icons.login_outlined),
             label: 'ログイン',
+          ),
+          NavigationDestination(
+            selectedIcon: Icon(Icons.account_circle),
+            icon: Icon(Icons.account_circle_outlined),
+            label: 'アカウント',
           ),
         ],
       ),
