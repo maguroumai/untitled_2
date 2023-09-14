@@ -1,9 +1,14 @@
+import 'dart:async';
+
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:untitled_2/model/entities/enum/gender.dart';
 import 'package:untitled_2/model/use_cases/auth/fetch_email.dart';
+import 'package:untitled_2/model/use_cases/auth/sign_out.dart';
 import 'package:untitled_2/model/use_cases/my_account_controller.dart';
 import 'package:untitled_2/presentation/pages/edit_profile_page.dart';
+import 'package:untitled_2/presentation/widgets/show_indicator.dart';
 
 class AccountPage extends HookConsumerWidget {
   const AccountPage({
@@ -13,7 +18,7 @@ class AccountPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final account = ref.watch(myAccountControllerProvider);
-    final currentEmail = ref.watch(fetchEmailProvider);
+    final currentEmail = ref.read(fetchEmailProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -58,6 +63,37 @@ class AccountPage extends HookConsumerWidget {
                           color: Colors.blue,
                         ),
                 ],
+              ),
+              Center(
+                child: TextButton(
+                  onPressed: () async {
+                    final result = await showOkCancelAlertDialog(
+                      context: context,
+                      title: 'ログアウトする',
+                    );
+                    if (result == OkCancelResult.ok) {
+                      if (!context.mounted) return;
+                      showIndicator(context);
+                      try {
+                        await ref.read(signOut)();
+                        if (!context.mounted) return;
+                        dismissIndicator(context);
+                        Theme.of(context);
+                      } on Exception catch (e) {
+                        if (!context.mounted) return;
+                        dismissIndicator(context);
+                        unawaited(
+                          showOkAlertDialog(
+                            context: context,
+                            title: 'エラー',
+                            message: e.toString(),
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  child: const Text('ログアウト'),
+                ),
               ),
             ],
           ),
