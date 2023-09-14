@@ -59,17 +59,44 @@ class MyAccountController extends StateNotifier<Account> {
       return;
     }
     final data = state.copyWith(
+      accountId: userId,
       name: name,
       gender: gender,
     );
-    final newAccount = Account(accountId: userId);
 
     final batch = _documentRepository.batch
-      ..set(Document.docRef(Account.docPath(userId)), newAccount.toDoc(),
+      ..set(Document.docRef(Account.docPath(userId)), data.toDoc(),
           SetOptions(merge: true))
       ..update(Document.docRef(Account.docPath(userId)), data.toDoc());
     await batch.commit();
 
     state = data;
   }
+
+  Future<void> deleteAccount(String userId) async {
+    final userId = _ref.read(firebaseAuthRepositoryProvider).loggedInUserId;
+    if (userId == null) {
+      return;
+    }
+    await _documentRepository.remove(Account.docPath(userId));
+    await _firebaseAuthRepository.authUser?.delete();
+
+    state = Account();
+  }
+
+  /*Future<void> removeUser() async {
+    final userId = _ref.read(firebaseAuthRepositoryProvider).loggedInUserId;
+    if (userId == null) {
+      return;
+    }
+    await _firebaseAuthRepository.authUser?.delete();
+  }
+
+  Future<void> deleteAccount(String userId) async {
+    final userId = _ref.read(firebaseAuthRepositoryProvider).loggedInUserId;
+    if (userId == null) {
+      return;
+    }
+    await _documentRepository.remove(Account.docPath(userId));
+  }*/
 }

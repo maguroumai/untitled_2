@@ -77,7 +77,6 @@ class EditProfilePage extends HookConsumerWidget {
                             name: name.isNotEmpty ? name : '名無し',
                             gender: gender.value,
                           );
-                      print(gender.value);
                       if (!context.mounted) return;
                       dismissIndicator(context);
                       await showOkAlertDialog(

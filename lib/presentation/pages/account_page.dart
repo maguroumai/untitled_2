@@ -25,9 +25,6 @@ class AccountPage extends HookConsumerWidget {
         actions: [
           IconButton(
               onPressed: () async {
-                await ref
-                    .read(myAccountControllerProvider.notifier)
-                    .fetchProfile();
                 if (!context.mounted) return;
                 Navigator.push(
                   context,
@@ -72,9 +69,9 @@ class AccountPage extends HookConsumerWidget {
                       title: 'ログアウトする',
                     );
                     if (result == OkCancelResult.ok) {
-                      if (!context.mounted) return;
-                      showIndicator(context);
                       try {
+                        if (!context.mounted) return;
+                        showIndicator(context);
                         await ref.read(signOut)();
                         if (!context.mounted) return;
                         dismissIndicator(context);
@@ -93,6 +90,47 @@ class AccountPage extends HookConsumerWidget {
                     }
                   },
                   child: const Text('ログアウト'),
+                ),
+              ),
+              Center(
+                child: TextButton(
+                  onPressed: () async {
+                    final result = await showOkCancelAlertDialog(
+                      context: context,
+                      title: 'アカウント削除',
+                    );
+                    if (result == OkCancelResult.ok) {
+                      try {
+                        if (!context.mounted) return;
+                        showIndicator(context);
+                        final userId = account.name;
+                        if (userId == null) {
+                          return;
+                        }
+                        await ref
+                            .read(myAccountControllerProvider.notifier)
+                            .deleteAccount(userId);
+                        /* await ref
+                            .read(myAccountControllerProvider.notifier)
+                            .removeUser();*/
+
+                        if (!context.mounted) return;
+                        dismissIndicator(context);
+                        Theme.of(context);
+                      } on Exception catch (e) {
+                        if (!context.mounted) return;
+                        dismissIndicator(context);
+                        unawaited(
+                          showOkAlertDialog(
+                            context: context,
+                            title: 'エラー',
+                            message: e.toString(),
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  child: const Text('アカウント削除'),
                 ),
               ),
             ],
