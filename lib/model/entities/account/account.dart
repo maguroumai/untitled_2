@@ -31,6 +31,7 @@ class Account with _$Account {
   Map<String, dynamic> toDoc() {
     final value = <String, dynamic>{
       'name': name,
+      'gender': gender.name,
       'createdAt': createdAt ?? FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     };

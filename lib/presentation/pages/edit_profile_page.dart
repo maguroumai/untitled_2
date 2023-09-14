@@ -13,8 +13,8 @@ class EditProfilePage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final nameKey = useState(GlobalKey<FormFieldState<String>>());
 
-    // final genderKey = useState(GlobalKey<FormFieldState<String>>());
-    final selectedGenderState = useState(Gender.none);
+    final genderKey = useState(GlobalKey<FormFieldState<String>>());
+    final gender = useState(Gender.none);
     // final isLoading = useState(false);
 
     final state = ref.watch(myAccountControllerProvider);
@@ -24,9 +24,14 @@ class EditProfilePage extends HookConsumerWidget {
         if (state.name != null) {
           nameKey.value.currentState?.didChange(state.name);
         }
+        /*final _gender = state.gender;
+        gender.value = _gender;
+        genderKey.value.currentState?.didChange(_gender.getLabel(context));*/
       });
       return null;
     }, [state]);
+
+    final genderList = Gender.values.map((e) => e.getLabel(context)).toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -46,18 +51,19 @@ class EditProfilePage extends HookConsumerWidget {
                 decoration: const InputDecoration(labelText: 'ユーザー名'),
                 onChanged: (value) {},
               ),
-              DropdownButton<Gender>(
-                value: selectedGenderState.value,
-                onChanged: (Gender? newValue) {
-                  selectedGenderState.value = newValue ?? Gender.none;
-                },
-                items: Gender.values
-                    .map<DropdownMenuItem<Gender>>((Gender gender) {
-                  return DropdownMenuItem<Gender>(
-                    value: gender,
-                    child: Text(gender.getLabel(context)),
+              DropdownButton<String>(
+                value: gender.value.getLabel(context),
+                items: genderList.map((String label) {
+                  return DropdownMenuItem<String>(
+                    value: label,
+                    child: Text(label),
                   );
                 }).toList(),
+                onChanged: (String? newValue) {
+                  final data = newValue ?? '';
+                  gender.value = data.getToGenderWithLabel(context);
+                  genderKey.value.currentState?.didChange(data);
+                },
               ),
               ElevatedButton(
                   child: const Text('更新'),
@@ -69,8 +75,9 @@ class EditProfilePage extends HookConsumerWidget {
                           .read(myAccountControllerProvider.notifier)
                           .saveProfile(
                             name: name.isNotEmpty ? name : '名無し',
-                            gender: selectedGenderState.value,
+                            gender: gender.value,
                           );
+                      print(gender.value);
                       if (!context.mounted) return;
                       dismissIndicator(context);
                       await showOkAlertDialog(

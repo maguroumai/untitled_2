@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:untitled_2/model/entities/enum/gender.dart';
+import 'package:untitled_2/model/use_cases/auth/fetch_email.dart';
 import 'package:untitled_2/model/use_cases/my_account_controller.dart';
 import 'package:untitled_2/presentation/pages/edit_profile_page.dart';
 
 class AccountPage extends HookConsumerWidget {
-  const AccountPage({Key? key}) : super(key: key);
+  const AccountPage({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final account = ref.watch(myAccountControllerProvider);
+    final currentEmail = ref.watch(fetchEmailProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -36,18 +40,25 @@ class AccountPage extends HookConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
+              Text('ログイン情報：$currentEmail'),
               Text('${account.name}'),
-              account.gender == Gender.woman
-                  ? const Icon(
-                      Icons.female,
-                      size: 16,
-                      color: Colors.pinkAccent,
-                    )
-                  : const Icon(
-                      Icons.male,
-                      size: 16,
-                      color: Colors.blue,
-                    ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(account.gender.getLabel(context)),
+                  account.gender == Gender.woman
+                      ? const Icon(
+                          Icons.female,
+                          size: 16,
+                          color: Colors.pinkAccent,
+                        )
+                      : const Icon(
+                          Icons.male,
+                          size: 16,
+                          color: Colors.blue,
+                        ),
+                ],
+              ),
             ],
           ),
         ),

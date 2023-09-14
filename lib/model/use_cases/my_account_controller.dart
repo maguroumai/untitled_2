@@ -71,6 +71,5 @@ class MyAccountController extends StateNotifier<Account> {
     await batch.commit();
 
     state = data;
-    print(data.accountId);
   }
 }
