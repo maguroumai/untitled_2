@@ -15,7 +15,6 @@ class EditProfilePage extends HookConsumerWidget {
 
     final genderKey = useState(GlobalKey<FormFieldState<String>>());
     final gender = useState(Gender.none);
-    // final isLoading = useState(false);
 
     final state = ref.watch(myAccountControllerProvider);
 
@@ -24,9 +23,6 @@ class EditProfilePage extends HookConsumerWidget {
         if (state.name != null) {
           nameKey.value.currentState?.didChange(state.name);
         }
-        /*final _gender = state.gender;
-        gender.value = _gender;
-        genderKey.value.currentState?.didChange(_gender.getLabel(context));*/
       });
       return null;
     }, [state]);

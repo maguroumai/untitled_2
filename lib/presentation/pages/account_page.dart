@@ -103,16 +103,13 @@ class AccountPage extends HookConsumerWidget {
                       try {
                         if (!context.mounted) return;
                         showIndicator(context);
-                        final userId = account.name;
+                        final userId = account.accountId;
                         if (userId == null) {
                           return;
                         }
                         await ref
                             .read(myAccountControllerProvider.notifier)
                             .deleteAccount(userId);
-                        /* await ref
-                            .read(myAccountControllerProvider.notifier)
-                            .removeUser();*/
 
                         if (!context.mounted) return;
                         dismissIndicator(context);
