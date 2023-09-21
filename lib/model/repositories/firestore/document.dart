@@ -25,7 +25,13 @@ class Document<T extends Object> {
   static Query<SnapType> collectionGroupQuery(String path) =>
       FirebaseFirestore.instance.collectionGroup(path);
 
+  static CollectionReference<SnapType> colRef(String path) =>
+      FirebaseFirestore.instance.collection(path);
+
   static DocumentReference<SnapType> docRef(String docPath) =>
+      FirebaseFirestore.instance.doc(docPath);
+
+  static DocumentReference<SnapType> docRefWithDocPath(String docPath) =>
       FirebaseFirestore.instance.doc(docPath);
 
   Document<T> copyWith(T newEntity) => Document(

@@ -7,6 +7,8 @@ import 'package:untitled_2/presentation/pages/sign_in_page.dart';
 import 'package:untitled_2/presentation/pages/sign_up_page.dart';
 import 'package:untitled_2/utils/logger.dart';
 
+import 'presentation/pages/todo/todo_page.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   Logger.configure();
@@ -70,6 +72,14 @@ class _MyWidgetState extends State<MyWidget> {
         child: AccountPage(),
       ),
     ),
+    Container(
+      height: double.infinity,
+      width: double.infinity,
+      color: Colors.green[100],
+      child: const Center(
+        child: TodoPage(),
+      ),
+    ),
   ];
 
   @override
@@ -96,6 +106,11 @@ class _MyWidgetState extends State<MyWidget> {
             selectedIcon: Icon(Icons.account_circle),
             icon: Icon(Icons.account_circle_outlined),
             label: 'アカウント',
+          ),
+          NavigationDestination(
+            selectedIcon: Icon(Icons.task_rounded),
+            icon: Icon(Icons.task_outlined),
+            label: 'TODO',
           ),
         ],
       ),
