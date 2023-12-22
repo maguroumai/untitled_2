@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:untitled_2/presentation/pages/todo/add_todo_task_page.dart';
 import 'package:untitled_2/presentation/pages/todo/task_tab.dart';
+import 'package:untitled_2/router/router.dart';
 
 class TodoPage extends HookConsumerWidget {
   const TodoPage({
@@ -14,13 +14,8 @@ class TodoPage extends HookConsumerWidget {
         appBar: AppBar(
           actions: [
             IconButton(
-                onPressed: () async {
-                  if (!context.mounted) return;
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const AddTodoTaskPage()),
-                  );
+                onPressed: () {
+                  const AddTodoRouteData().push(context);
                 },
                 icon: const Icon(Icons.add_circle_outline))
           ],

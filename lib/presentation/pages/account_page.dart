@@ -7,8 +7,9 @@ import 'package:untitled_2/model/entities/enum/gender.dart';
 import 'package:untitled_2/model/use_cases/auth/fetch_email.dart';
 import 'package:untitled_2/model/use_cases/auth/sign_out.dart';
 import 'package:untitled_2/model/use_cases/my_account_controller.dart';
-import 'package:untitled_2/presentation/pages/edit_profile_page.dart';
 import 'package:untitled_2/presentation/widgets/show_indicator.dart';
+import 'package:untitled_2/presentation/widgets/thumbnail.dart';
+import 'package:untitled_2/router/router.dart';
 
 class AccountPage extends HookConsumerWidget {
   const AccountPage({
@@ -26,11 +27,7 @@ class AccountPage extends HookConsumerWidget {
           IconButton(
               onPressed: () async {
                 if (!context.mounted) return;
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const EditProfilePage()),
-                );
+                const EditProfileRouteData().push(context);
               },
               icon: const Icon(Icons.edit_note_sharp))
         ],
@@ -42,6 +39,7 @@ class AccountPage extends HookConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
+              const CircleThumbnail(),
               Text('ログイン情報：$currentEmail'),
               Text('${account.name}'),
               Row(

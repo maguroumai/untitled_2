@@ -1,13 +1,10 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:untitled_2/firebase_options.dart';
-import 'package:untitled_2/presentation/pages/account_page.dart';
-import 'package:untitled_2/presentation/pages/sign_in_page.dart';
-import 'package:untitled_2/presentation/pages/sign_up_page.dart';
+import 'package:untitled_2/router/router.dart';
 import 'package:untitled_2/utils/logger.dart';
-
-import 'presentation/pages/todo/todo_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,71 +23,35 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
+      routerConfig: GoRouter(
+        initialLocation: '/sing_up',
+        routes: $appRoutes,
+      ),
       title: 'Flutter Demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyWidget(),
     );
   }
 }
 
-class MyWidget extends StatefulWidget {
-  const MyWidget({Key? key}) : super(key: key);
+class MyWidget extends StatelessWidget {
+  const MyWidget({
+    required this.navigationShell,
+    super.key,
+  });
 
-  @override
-  State<MyWidget> createState() => _MyWidgetState();
-}
-
-class _MyWidgetState extends State<MyWidget> {
-  int _currentIndex = 0;
-
-  List<Widget> pages = [
-    Container(
-      height: double.infinity,
-      width: double.infinity,
-      color: Colors.blue[100],
-      child: const Center(
-        child: SingUpPage(),
-      ),
-    ),
-    Container(
-      height: double.infinity,
-      width: double.infinity,
-      color: Colors.green[100],
-      child: const Center(
-        child: SingInPage(),
-      ),
-    ),
-    Container(
-      height: double.infinity,
-      width: double.infinity,
-      color: Colors.green[100],
-      child: const Center(
-        child: AccountPage(),
-      ),
-    ),
-    Container(
-      height: double.infinity,
-      width: double.infinity,
-      color: Colors.green[100],
-      child: const Center(
-        child: TodoPage(),
-      ),
-    ),
-  ];
+  final StatefulNavigationShell navigationShell;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(child: pages[_currentIndex]),
+      body: navigationShell,
       bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) => setState(() {
-          _currentIndex = index;
-        }),
+        selectedIndex: navigationShell.currentIndex,
+        onDestinationSelected: _goBranch,
         destinations: const [
           NavigationDestination(
             selectedIcon: Icon(Icons.add_box),
@@ -114,6 +75,13 @@ class _MyWidgetState extends State<MyWidget> {
           ),
         ],
       ),
+    );
+  }
+
+  void _goBranch(int index) {
+    navigationShell.goBranch(
+      index,
+      initialLocation: index == navigationShell.currentIndex,
     );
   }
 }

@@ -4,7 +4,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:untitled_2/model/entities/enum/gender.dart';
 import 'package:untitled_2/model/use_cases/my_account_controller.dart';
-import 'package:untitled_2/presentation/widgets/show_indicator.dart';
 
 class EditProfilePage extends HookConsumerWidget {
   const EditProfilePage({Key? key}) : super(key: key);
@@ -39,6 +38,10 @@ class EditProfilePage extends HookConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(Icons.add_a_photo_outlined),
+              ),
               TextFormField(
                 key: nameKey.value,
                 initialValue: nameKey.value.currentState?.value ?? '',
@@ -73,20 +76,26 @@ class EditProfilePage extends HookConsumerWidget {
                             name: name.isNotEmpty ? name : '名無し',
                             gender: gender.value,
                           );
-                      if (!context.mounted) return;
-                      dismissIndicator(context);
-                      await showOkAlertDialog(
-                        context: context,
-                        title: 'プロフィールを更新しました',
-                      );
-                      if (!context.mounted) return;
-                      Theme.of(context);
+                      if (context.mounted) {
+                        await showOkAlertDialog(
+                          context: context,
+                          title: 'プロフィールを更新しました',
+                        );
+                      }
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
                     } catch (e) {
-                      await showOkAlertDialog(
-                        context: context,
-                        title: 'エラー',
-                        message: e.toString(),
-                      );
+                      if (context.mounted) {
+                        await showOkAlertDialog(
+                          context: context,
+                          title: 'エラー',
+                          message: e.toString(),
+                        );
+                      }
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
                     }
                   }),
             ],
