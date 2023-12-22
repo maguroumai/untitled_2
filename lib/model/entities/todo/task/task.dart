@@ -42,7 +42,7 @@ class Task with _$Task {
   }
 
   static Map<String, dynamic> toUpIsDone({
-    required bool isNotDone,
+    required bool? isNotDone,
   }) {
     final value = <String, dynamic>{
       'isNotDone': isNotDone,
@@ -65,4 +65,10 @@ class Task with _$Task {
     }
     return value;
   }
+
+  Map<String, dynamic> get toUpdateDoc => <String, dynamic>{
+        'title': title,
+        'comment': comment,
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
 }

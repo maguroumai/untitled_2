@@ -1,33 +1,36 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:untitled_2/model/entities/todo/accounts/account.dart' as todo;
 import 'package:untitled_2/model/entities/todo/task/task.dart';
 import 'package:untitled_2/model/repositories/firebase_auth/firebase_auth_repository.dart';
 import 'package:untitled_2/model/repositories/firestore/document_repository.dart';
+import 'package:untitled_2/model/use_cases/task/my_task.dart';
 import 'package:untitled_2/model/use_cases/task/task_observer_provider.dart';
 import 'package:untitled_2/utils/logger.dart';
 
-final saveTask = Provider(SaveTask.new);
+part 'save_task.g.dart';
 
-class SaveTask {
-  SaveTask(this._ref);
+@riverpod
+class SaveTask extends _$SaveTask {
+  String? get _loggedInUserId =>
+      ref.read(firebaseAuthRepositoryProvider).loggedInUserId;
 
-  final Ref _ref;
+  DocumentRepository get _documentRepository =>
+      ref.read(documentRepositoryProvider);
 
-  Future<Task?> call({
+  @override
+  FutureOr<Task?> build({
     required String title,
     required String comment,
   }) async {
-    final firebaseAuthRepository = _ref.read(firebaseAuthRepositoryProvider);
-    final userId = firebaseAuthRepository.loggedInUserId;
+    final userId = _loggedInUserId;
     if (userId == null) {
       logger.shout('userId is null');
       return null;
     }
-    final documentRepository = _ref.read(documentRepositoryProvider);
 
-    final docId = documentRepository.docId;
+    final docId = _documentRepository.docId;
     final now = DateTime.now();
-    final data = Task(
+    final task = Task(
       accountId: userId,
       taskId: docId,
       title: title,
@@ -36,13 +39,12 @@ class SaveTask {
       createdAt: now,
       updatedAt: now,
     );
-
-    await documentRepository.save(
+    await _documentRepository.save(
       todo.Account.taskCollectionDocPath(userId, docId),
-      data: data.toDoc(),
+      data: task.toDoc(),
     );
-    _ref.read(taskObserverProvider).create(data);
-
-    return data;
+    ref.watch(taskObserverProvider).create(task);
+    ref.invalidate(myTaskControllerProvider);
+    return task;
   }
 }

@@ -1,8 +1,5 @@
-import 'dart:async';
-
 import 'package:collection/collection.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:untitled_2/model/entities/enum/observe_operate.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:untitled_2/model/entities/todo/accounts/account.dart' as todo;
 import 'package:untitled_2/model/entities/todo/task/task.dart';
 import 'package:untitled_2/model/repositories/firebase_auth/firebase_auth_repository.dart';
@@ -10,150 +7,141 @@ import 'package:untitled_2/model/repositories/firestore/collection_paging_reposi
 import 'package:untitled_2/model/repositories/firestore/document.dart';
 import 'package:untitled_2/model/repositories/firestore/document_repository.dart';
 import 'package:untitled_2/model/use_cases/auth/auth_state_controller.dart';
-import 'package:untitled_2/model/use_cases/task/task_observer_provider.dart';
-import 'package:untitled_2/utils/logger.dart';
 
-final myTaskProvider = StateNotifierProvider<MyTask, List<Task>>((ref) {
-  ref.watch(authStateControllerProvider);
-  return MyTask(ref);
-});
+part 'my_task.g.dart';
 
-class MyTask extends StateNotifier<List<Task>> {
-  MyTask(this._ref) : super(<Task>[]) {
-    _taskDisposer = _ref.read(taskObserverProvider).fetch.listen((event) {
-      if (event.operate == ObserveOperate.create) {
-        state = [event.data, ...state];
-      } else if (event.operate == ObserveOperate.update) {
-        state = state
-            .map((e) => e.taskId == event.data.taskId ? event.data : e)
-            .toList();
-      } else if (event.operate == ObserveOperate.delete) {
-        state = state
-            .where((element) => element.taskId != event.data.taskId)
-            .toList();
-      }
-    });
+@riverpod
+CollectionPagingRepository<Task> collectionPagingRepository(
+  CollectionPagingRepositoryRef ref,
+  CollectionParam<Task> query,
+) {
+  return CollectionPagingRepository<Task>(
+    query: query.query,
+    limit: query.limit,
+    decode: query.decode,
+  );
+}
 
-    final userId = _firebaseAuthRepository.loggedInUserId;
-    if (userId == null) {
-      logger.shout('userId is null');
-      return;
-    }
-    _collectionPagingRepository = CollectionPagingRepository<Task>(
-      query: Document.collectionRef(todo.Account.taskCollectionPath(userId))
-          .orderBy('createdAt', descending: true),
-      limit: 5,
-      decode: Task.fromJson,
-    );
-  }
+@riverpod
+class MyTaskController extends _$MyTaskController {
+  static int get defaultLimit => 5;
 
-  final Ref _ref;
+  String? get _loggedInUserId =>
+      ref.read(firebaseAuthRepositoryProvider).loggedInUserId;
 
-  FirebaseAuthRepository get _firebaseAuthRepository =>
-      _ref.read(firebaseAuthRepositoryProvider);
-
-  DocumentRepository get _documentRepository =>
-      _ref.read(documentRepositoryProvider);
   CollectionPagingRepository<Task>? _collectionPagingRepository;
 
-  late StreamSubscription<TaskOperateState> _taskDisposer;
-
   @override
-  void dispose() {
-    super.dispose();
-    _taskDisposer.cancel();
-  }
+  FutureOr<List<Task>> build() async {
+    ref.watch(authStateControllerProvider);
 
-  Future<List<Task>> fetch() async {
-    final repository = _collectionPagingRepository;
-    if (repository == null) {
+    final userId = _loggedInUserId;
+    if (userId == null) {
       return [];
     }
-    final data = await repository.fetch(fromCache: (caches) {
-      state = caches.map((e) => e.entity).whereType<Task>().toList();
+
+    final repository = ref.watch(
+      collectionPagingRepositoryProvider(
+        CollectionParam<Task>(
+          query: Document.collectionRef(todo.Account.taskCollectionPath(userId))
+              .orderBy('createdAt', descending: true),
+          limit: defaultLimit,
+          decode: Task.fromJson,
+        ),
+      ),
+    );
+    _collectionPagingRepository = repository;
+
+    final data = await repository.fetch(fromCache: (cache) {
+      state = AsyncData(
+        cache.map((e) => e.entity).whereType<Task>().toList(),
+      );
     });
-    final results = data.map((e) => e.entity).whereType<Task>().toList();
-    state = results;
-    return results;
+    return data.map((e) => e.entity).whereType<Task>().toList();
   }
 
-  Future<List<Task>> fetchMore() async {
+  Future<void> fetchMore() async {
     final repository = _collectionPagingRepository;
     if (repository == null) {
-      return [];
-    }
-    final results = await repository.fetchMore();
-    final newList = state.toList()
-      ..addAll(results.map((e) => e.entity).whereType<Task>().toList());
-    state = newList;
-    return newList;
-  }
-
-  Future<void> update({
-    required String taskId,
-    required String title,
-    required String comment,
-    required bool isDone,
-  }) async {
-    final userId = _firebaseAuthRepository.loggedInUserId;
-    if (userId == null) {
-      logger.shout('userId is null');
       return;
     }
 
-    await _documentRepository.update(
-      todo.Account.taskCollectionDocPath(userId, taskId),
-      data: Task.toUpdate(
-        title: title,
-        comment: comment,
-      ),
+    final data = await repository.fetchMore();
+    final previousState = await future;
+    if (data.isNotEmpty) {
+      state = AsyncData([
+        ...previousState,
+        ...data.map((e) => e.entity).whereType<Task>().toList(),
+      ]);
+    }
+  }
+
+  Future<void> onUpdate(Task task) async {
+    final userId = _loggedInUserId;
+    final docId = task.taskId;
+    if (userId == null || docId == null) {
+      return;
+    }
+    final value = await future;
+    final data = task.copyWith(updatedAt: DateTime.now());
+    await ref.read(documentRepositoryProvider).update(
+          todo.Account.taskCollectionDocPath(userId, docId),
+          data: data.toUpdateDoc,
+        );
+    state = AsyncData(
+      value
+          .map(
+            (e) => e.taskId == task.taskId ? task : e,
+          )
+          .toList(),
     );
+  }
+
+  Future<void> onIsDone(Task task) async {
+    final userId = _loggedInUserId;
+    final docId = task.taskId;
+    if (userId == null || docId == null) {
+      return;
+    }
+
+    final data = task.copyWith(
+      taskId: task.taskId,
+      isNotDone: task.isNotDone,
+    );
+    await ref.read(documentRepositoryProvider).update(
+          todo.Account.taskCollectionDocPath(userId, docId),
+          data: Task.toUpIsDone(
+            isNotDone: data.isNotDone,
+          ),
+        );
+    final value = await future;
     final newData =
-        state.firstWhereOrNull((element) => element.taskId == taskId)?.copyWith(
-              title: title,
-              comment: comment,
+        value.firstWhereOrNull((e) => e.taskId == data.taskId)?.copyWith(
+              isNotDone: data.isNotDone,
               updatedAt: DateTime.now(),
             );
     if (newData != null) {
-      state = state.map((e) => e.taskId == taskId ? newData : e).toList();
+      state = AsyncData(
+          value.map((e) => e.taskId == data.taskId ? newData : e).toList());
     }
   }
 
-  Future<void> upIsDone({
-    required String taskId,
-    required bool isNotDone,
-  }) async {
-    final userId = _firebaseAuthRepository.loggedInUserId;
+  Future<void> onRemove(String taskId) async {
+    final userId = _loggedInUserId;
+
     if (userId == null) {
-      logger.shout('userId is null');
       return;
     }
-
-    await _documentRepository.update(
-      todo.Account.taskCollectionDocPath(userId, taskId),
-      data: Task.toUpIsDone(
-        isNotDone: isNotDone,
-      ),
-    );
-
-    final newData =
-        state.firstWhereOrNull((element) => element.taskId == taskId)?.copyWith(
-              isNotDone: isNotDone,
-              updatedAt: DateTime.now(),
-            );
-    if (newData != null) {
-      state = state.map((e) => e.taskId == taskId ? newData : e).toList();
-    }
-  }
-
-  Future<void> delete(String taskId) async {
-    final userId = _firebaseAuthRepository.loggedInUserId;
-    if (userId == null) {
-      logger.shout('userId is null');
-      return;
-    }
-    await _documentRepository
+    final value = await future;
+    await ref
+        .read(documentRepositoryProvider)
         .remove(todo.Account.taskCollectionDocPath(userId, taskId));
-    state = state.where((element) => element.taskId != taskId).toList();
+    state = AsyncData(
+      value
+          .where(
+            (e) => e.taskId != taskId,
+          )
+          .toList(),
+    );
   }
 }

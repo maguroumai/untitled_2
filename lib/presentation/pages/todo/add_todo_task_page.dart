@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:untitled_2/model/use_cases/task/save_task.dart';
-import 'package:untitled_2/presentation/widgets/show_indicator.dart';
 
 class AddTodoTaskPage extends HookConsumerWidget {
   const AddTodoTaskPage({Key? key}) : super(key: key);
@@ -47,21 +46,28 @@ class AddTodoTaskPage extends HookConsumerWidget {
                           titleKey.value.currentState?.value?.trim() ?? '';
                       final comment =
                           commentKey.value.currentState?.value?.trim() ?? '';
-                      await ref.read(saveTask)(title: title, comment: comment);
-                      if (!context.mounted) return;
-                      dismissIndicator(context);
-                      await showOkAlertDialog(
-                        context: context,
-                        title: '登録しました',
-                      );
-                      if (!context.mounted) return;
-                      Theme.of(context);
+                      ref.read(
+                          saveTaskProvider(title: title, comment: comment));
+                      if (context.mounted) {
+                        await showOkAlertDialog(
+                          context: context,
+                          title: '登録しました',
+                        );
+                      }
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
                     } catch (e) {
-                      await showOkAlertDialog(
-                        context: context,
-                        title: 'エラー',
-                        message: e.toString(),
-                      );
+                      if (context.mounted) {
+                        await showOkAlertDialog(
+                          context: context,
+                          title: 'エラー',
+                          message: e.toString(),
+                        );
+                      }
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
                     }
                   }),
             ],

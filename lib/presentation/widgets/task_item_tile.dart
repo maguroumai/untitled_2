@@ -16,6 +16,8 @@ class TaskItemTile extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final controller = ref.watch(myTaskControllerProvider.notifier);
+
     return MaterialTapGesture(
       onTap: onTap,
       child: Column(
@@ -56,10 +58,8 @@ class TaskItemTile extends HookConsumerWidget {
                           if (taskId == null) {
                             return;
                           }
-                          print(value);
-                          await ref
-                              .watch(myTaskProvider.notifier)
-                              .upIsDone(taskId: taskId, isNotDone: !value);
+                          await controller
+                              .onIsDone(data.copyWith(isNotDone: !value));
                         },
                       ),
                     ],

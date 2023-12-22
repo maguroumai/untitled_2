@@ -14,9 +14,9 @@ class EditTodoTaskPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final titleKey = useState(GlobalKey<FormFieldState<String>>());
-    final commentKey = useState(GlobalKey<FormFieldState<String>>());
-    final myTaskController = ref.watch(myTaskProvider.notifier);
+    final titleController = useTextEditingController(text: data.title);
+    final commentController = useTextEditingController(text: data.comment);
+    final controller = ref.watch(myTaskControllerProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(
@@ -29,92 +29,94 @@ class EditTodoTaskPage extends HookConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               TextFormField(
-                key: titleKey.value,
-                initialValue: data.title,
+                controller: titleController,
                 decoration: const InputDecoration(labelText: '今日やる事'),
                 onChanged: (value) {},
               ),
               TextFormField(
-                key: commentKey.value,
-                initialValue: data.comment,
+                controller: commentController,
                 decoration: const InputDecoration(labelText: 'コメント'),
                 onChanged: (value) {},
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.only(top: 80),
-                  ),
                   ElevatedButton(
-                      child: const Text('削除'),
-                      onPressed: () async {
-                        try {
-                          final taskId = data.taskId;
-                          if (taskId == null) {
-                            return;
-                          }
-                          await myTaskController.delete(taskId);
-                          ref.read(taskObserverProvider).delete(data);
-                          if (!context.mounted) return;
+                    child: const Text('削除'),
+                    onPressed: () async {
+                      try {
+                        final taskId = data.taskId;
+                        if (taskId == null) {
+                          return;
+                        }
+                        await controller.onRemove(taskId);
+                        ref.read(taskObserverProvider).delete(data);
+                        if (context.mounted) {
                           dismissIndicator(context);
                           await showOkAlertDialog(
                             context: context,
-                            title: '更新しました',
+                            title: '削除しました',
                           );
-                          if (!context.mounted) return;
-                          Theme.of(context);
-                        } catch (e) {
+                        }
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
                           await showOkAlertDialog(
                             context: context,
                             title: 'エラー',
                             message: e.toString(),
                           );
                         }
-                      }),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 100.0),
-                    child: ElevatedButton(
-                        child: const Text('更新'),
-                        onPressed: () async {
-                          try {
-                            final taskId = data.taskId;
-                            final isDone = data.isDone;
-                            if (taskId == null) {
-                              return;
-                            }
-                            final title =
-                                titleKey.value.currentState?.value?.trim() ??
-                                    '';
-                            final comment =
-                                commentKey.value.currentState?.value?.trim() ??
-                                    '';
-                            await myTaskController.update(
-                                taskId: taskId,
+                      }
+                    },
+                  ),
+                  const SizedBox(width: 16),
+                  ElevatedButton(
+                    child: const Text('更新'),
+                    onPressed: () async {
+                      try {
+                        final taskId = data.taskId;
+                        if (taskId == null) {
+                          return;
+                        }
+                        final title = titleController.text.trim();
+                        final comment = commentController.text.trim();
+                        await controller.onUpdate(
+                          data.copyWith(title: title, comment: comment),
+                        );
+
+                        ref.read(taskObserverProvider).update(
+                              data.copyWith(
                                 title: title,
                                 comment: comment,
-                                isDone: isDone);
-                            ref.read(taskObserverProvider).update(data.copyWith(
-                                  title: title,
-                                  comment: comment,
-                                  updatedAt: DateTime.now(),
-                                ));
-                            if (!context.mounted) return;
-                            dismissIndicator(context);
-                            await showOkAlertDialog(
-                              context: context,
-                              title: '更新しました',
+                                updatedAt: DateTime.now(),
+                              ),
                             );
-                            if (!context.mounted) return;
-                            Theme.of(context);
-                          } catch (e) {
-                            await showOkAlertDialog(
-                              context: context,
-                              title: 'エラー',
-                              message: e.toString(),
-                            );
-                          }
-                        }),
+
+                        if (context.mounted) {
+                          await showOkAlertDialog(
+                            context: context,
+                            title: '更新しました',
+                          );
+                        }
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          await showOkAlertDialog(
+                            context: context,
+                            title: 'エラー',
+                            message: e.toString(),
+                          );
+                        }
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                        }
+                      }
+                    },
                   ),
                 ],
               ),
