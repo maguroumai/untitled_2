@@ -3,24 +3,27 @@ import 'dart:async';
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:untitled_2/extensions/string_extension.dart';
-import 'package:untitled_2/model/use_cases/auth/sign_up_with_email_and_password.dart';
+import 'package:sign_in_button/sign_in_button.dart';
+import 'package:untitled_2/model/use_cases/auth/sign_in_with_account.dart';
+import 'package:untitled_2/model/use_cases/auth/sign_in_with_anonymously.dart';
+import 'package:untitled_2/model/use_cases/auth/sign_in_with_email_and_password.dart';
 import 'package:untitled_2/presentation/custom_hooks/use_global_key.dart';
 import 'package:untitled_2/presentation/widgets/show_indicator.dart';
 import 'package:untitled_2/utils/logger.dart';
 
-class SingUpPage extends HookConsumerWidget {
-  const SingUpPage({super.key});
+import '../../model/repositories/firebase_auth/login_type.dart';
+
+class SingInPage extends HookConsumerWidget {
+  const SingInPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final emailFormFieldKey = useFormFieldStateKey();
     final passwordFormFieldKey = useFormFieldStateKey();
-    final confirmPasswordFormFieldKey = useFormFieldStateKey();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('登録'),
+        title: const Text('ログイン'),
       ),
       body: Center(
         child: Container(
@@ -45,34 +48,15 @@ class SingUpPage extends HookConsumerWidget {
                     (value == null || value.isEmpty) ? 'パスワード' : null,
                 obscureText: true,
               ),
-              TextFormField(
-                key: confirmPasswordFormFieldKey,
-                decoration: const InputDecoration(labelText: 'パスワード確認'),
-                obscureText: true,
-                validator: (value) {
-                  final passwordText =
-                      passwordFormFieldKey.currentState?.value?.trim();
-                  if (value == null ||
-                      !value.trim().isPassword ||
-                      value != passwordText) {
-                    return '正しいパスワードを入力してください';
-                  }
-                  return null;
-                },
-              ),
               ElevatedButton(
-                child: const Text('登録'),
+                child: const Text('ログイン'),
                 onPressed: () async {
                   final isValidEmail =
                       emailFormFieldKey.currentState?.validate() ?? false;
                   final isValidPassword =
                       passwordFormFieldKey.currentState?.validate() ?? false;
-                  final isValidConfirmPassword =
-                      confirmPasswordFormFieldKey.currentState?.validate() ??
-                          false;
-                  if (!isValidEmail ||
-                      !isValidPassword ||
-                      !isValidConfirmPassword) {
+                  false;
+                  if (!isValidEmail || !isValidPassword) {
                     logger.info('Invalid input data');
                     return;
                   }
@@ -86,7 +70,7 @@ class SingUpPage extends HookConsumerWidget {
                   try {
                     showIndicator(context);
 
-                    await ref.read(signUpWithEmailAndPasswordProvider)(
+                    await ref.read(signInWithEmailAndPasswordProvider)(
                       email: email,
                       password: password,
                     );
@@ -94,7 +78,7 @@ class SingUpPage extends HookConsumerWidget {
                     dismissIndicator(context);
                     await showOkAlertDialog(
                       context: context,
-                      title: '新規登録しました',
+                      title: 'ログインしました',
                     );
                     if (!context.mounted) return;
                     Theme.of(context);
@@ -110,6 +94,26 @@ class SingUpPage extends HookConsumerWidget {
                   }
                 },
               ),
+              ElevatedButton(
+                child: const Text('匿名でログインする'),
+                onPressed: () async {
+                  try {
+                    await ref.read(signInWithAnonymously)();
+                  } catch (e) {
+                    print(e);
+                  }
+                },
+              ),
+              SignInButton(
+                Buttons.google,
+                onPressed: () async {
+                  try {
+                    await ref.read(signInWithAccount)(LoginType.google);
+                  } catch (e) {
+                    print(e);
+                  }
+                },
+              )
             ],
           ),
         ),

@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:untitled_2/firebase_options.dart';
+import 'package:untitled_2/presentation/pages/sign_in_page.dart';
 import 'package:untitled_2/presentation/pages/sign_up_page.dart';
 import 'package:untitled_2/utils/logger.dart';
 
@@ -49,18 +50,16 @@ class _MyWidgetState extends State<MyWidget> {
       width: double.infinity,
       color: Colors.blue[100],
       child: const Center(
-        child:
-            // Text('Third Page'),
-            SingUpPage(),
+        child: SingUpPage(),
       ),
     ),
     Container(
       height: double.infinity,
       width: double.infinity,
       color: Colors.green[100],
-      child: const Center(child: Text('Third Page')
-          // AccountPage(),
-          ),
+      child: const Center(
+        child: SingInPage(),
+      ),
     ),
   ];
 
@@ -77,12 +76,12 @@ class _MyWidgetState extends State<MyWidget> {
           NavigationDestination(
             selectedIcon: Icon(Icons.add_box),
             icon: Icon(Icons.add_box_outlined),
-            label: 'ログイン',
+            label: '新規登録',
           ),
           NavigationDestination(
-            selectedIcon: Icon(Icons.account_circle),
-            icon: Icon(Icons.account_circle_outlined),
-            label: 'アカウント',
+            selectedIcon: Icon(Icons.login),
+            icon: Icon(Icons.login_outlined),
+            label: 'ログイン',
           ),
         ],
       ),

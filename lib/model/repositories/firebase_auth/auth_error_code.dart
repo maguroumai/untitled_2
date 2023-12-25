@@ -46,7 +46,9 @@ enum AuthErrorCode {
   userDisabled('user-disabled'),
 
   /// メールアドレスに対応するユーザーが存在しない
-  userNotFound('user-not-found');
+  userNotFound('user-not-found'),
+
+  userEmailSignIn('user-sign-in');
 
   const AuthErrorCode(this.value);
   final String value;

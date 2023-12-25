@@ -1,14 +1,13 @@
-/*
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:untitled_2/model/entities/account/account.dart';
 import 'package:untitled_2/model/repositories/firebase_auth/firebase_auth_repository.dart';
 import 'package:untitled_2/model/repositories/firebase_auth/login_type.dart';
 import 'package:untitled_2/model/repositories/firestore/document.dart';
 import 'package:untitled_2/model/repositories/firestore/document_repository.dart';
+import 'package:untitled_2/model/use_cases/auth/auth_state_controller.dart';
 import 'package:untitled_2/utils/logger.dart';
-import 'package:untitled_2/utils/provider.dart';
 
-final loginAccount = Provider(SignInWithAccount.new);
+final signInWithAccount = Provider(SignInWithAccount.new);
 
 class SignInWithAccount {
   SignInWithAccount(this._ref);
@@ -58,9 +57,7 @@ class SignInWithAccount {
           decode: Account.fromJson,
         );
         if (!account.exists) {
-          _ref.read(authStateProvider.notifier).update(
-                (state) => AuthState.signIn,
-              );
+          _ref.read(authStateControllerProvider);
           return account;
         }
       });
@@ -68,6 +65,6 @@ class SignInWithAccount {
       logger.shout(e);
       rethrow;
     }
+    return null;
   }
 }
-*/
