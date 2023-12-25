@@ -2,9 +2,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:untitled_2/core/router/router.dart';
+import 'package:untitled_2/core/utils/logger.dart';
 import 'package:untitled_2/firebase_options.dart';
-import 'package:untitled_2/router/router.dart';
-import 'package:untitled_2/utils/logger.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
