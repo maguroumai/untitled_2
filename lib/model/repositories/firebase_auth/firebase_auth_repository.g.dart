@@ -7,7 +7,7 @@ part of 'firebase_auth_repository.dart';
 // **************************************************************************
 
 String _$firebaseAuthRepositoryHash() =>
-    r'dc4adaef041663d665b9caa645b087782a5570d5';
+    r'e21fe958ff34b2b85cfcdccecf711ef86367024c';
 
 /// See also [firebaseAuthRepository].
 @ProviderFor(firebaseAuthRepository)

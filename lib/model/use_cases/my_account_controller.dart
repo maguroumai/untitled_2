@@ -1,4 +1,4 @@
-/*
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:untitled_2/model/entities/account/account.dart';
 import 'package:untitled_2/model/entities/enum/gender.dart';
@@ -7,11 +7,12 @@ import 'package:untitled_2/model/repositories/firebase_auth/login_type.dart';
 import 'package:untitled_2/model/repositories/firestore/document.dart';
 import 'package:untitled_2/model/repositories/firestore/document_repository.dart';
 import 'package:untitled_2/utils/logger.dart';
-import 'package:untitled_2/utils/provider.dart';
+
+import 'auth/auth_state_controller.dart';
 
 final myAccountControllerProvider =
     StateNotifierProvider<MyAccountController, Account>((ref) {
-  final authState = ref.watch(authStateProvider);
+  final authState = ref.watch(authStateControllerProvider).isSignIn;
   logger.info(authState);
   return MyAccountController(ref);
 });
@@ -58,14 +59,44 @@ class MyAccountController extends StateNotifier<Account> {
       return;
     }
     final data = state.copyWith(
+      accountId: userId,
       name: name,
       gender: gender,
     );
 
     final batch = _documentRepository.batch
+      ..set(Document.docRef(Account.docPath(userId)), data.toDoc(),
+          SetOptions(merge: true))
       ..update(Document.docRef(Account.docPath(userId)), data.toDoc());
     await batch.commit();
+
     state = data;
   }
+
+  Future<void> deleteAccount(String userId) async {
+    final userId = _ref.read(firebaseAuthRepositoryProvider).loggedInUserId;
+    if (userId == null) {
+      return;
+    }
+    await _documentRepository.remove(Account.docPath(userId));
+    await _firebaseAuthRepository.authUser?.delete();
+
+    state = Account();
+  }
+
+  /*Future<void> removeUser() async {
+    final userId = _ref.read(firebaseAuthRepositoryProvider).loggedInUserId;
+    if (userId == null) {
+      return;
+    }
+    await _firebaseAuthRepository.authUser?.delete();
+  }
+
+  Future<void> deleteAccount(String userId) async {
+    final userId = _ref.read(firebaseAuthRepositoryProvider).loggedInUserId;
+    if (userId == null) {
+      return;
+    }
+    await _documentRepository.remove(Account.docPath(userId));
+  }*/
 }
-*/
