@@ -7,7 +7,8 @@ import 'package:untitled_2/core/router/router.dart';
 import 'package:untitled_2/core/widgets/show_indicator.dart';
 import 'package:untitled_2/core/widgets/thumbnail.dart';
 import 'package:untitled_2/features/account/entities/gender.dart';
-import 'package:untitled_2/features/account/use_cases/my_account_controller.dart';
+import 'package:untitled_2/features/account/use_cases/delete_my_account.dart';
+import 'package:untitled_2/features/account/use_cases/fetch_my_account.dart';
 import 'package:untitled_2/features/authentication/use_cases/fetch_email.dart';
 import 'package:untitled_2/features/authentication/use_cases/sign_out.dart';
 
@@ -18,7 +19,7 @@ class AccountPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final account = ref.watch(myAccountControllerProvider);
+    final account = ref.watch(fetchMyAccountProvider).asData?.value;
     final currentEmail = ref.read(fetchEmailProvider);
 
     return Scaffold(
@@ -41,22 +42,24 @@ class AccountPage extends HookConsumerWidget {
             children: <Widget>[
               const CircleThumbnail(),
               Text('ログイン情報：$currentEmail'),
-              Text('${account.name}'),
+              Text('${account?.name}'),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(account.gender.getLabel(context)),
-                  account.gender == Gender.woman
-                      ? const Icon(
-                          Icons.female,
+                  Text(
+                    (account?.gender ?? Gender.none).getLabel(context),
+                  ),
+                  account?.gender == Gender.none
+                      ? const SizedBox.shrink()
+                      : Icon(
+                          account?.gender == Gender.woman
+                              ? Icons.female
+                              : Icons.male,
                           size: 16,
-                          color: Colors.pinkAccent,
+                          color: account?.gender == Gender.woman
+                              ? Colors.pinkAccent
+                              : Colors.blue,
                         )
-                      : const Icon(
-                          Icons.male,
-                          size: 16,
-                          color: Colors.blue,
-                        ),
                 ],
               ),
               Center(
@@ -101,13 +104,11 @@ class AccountPage extends HookConsumerWidget {
                       try {
                         if (!context.mounted) return;
                         showIndicator(context);
-                        final userId = account.accountId;
+                        final userId = account?.accountId;
                         if (userId == null) {
                           return;
                         }
-                        await ref
-                            .read(myAccountControllerProvider.notifier)
-                            .deleteAccount(userId);
+                        await ref.read(deleteMyAccountProvider).call(userId);
 
                         if (!context.mounted) return;
                         dismissIndicator(context);

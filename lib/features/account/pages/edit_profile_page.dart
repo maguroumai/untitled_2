@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:untitled_2/features/account/entities/gender.dart';
-import 'package:untitled_2/features/account/use_cases/my_account_controller.dart';
+import 'package:untitled_2/features/account/use_cases/fetch_my_account.dart';
+import 'package:untitled_2/features/account/use_cases/save_my_account.dart';
 
 class EditProfilePage extends HookConsumerWidget {
   const EditProfilePage({Key? key}) : super(key: key);
@@ -15,12 +16,12 @@ class EditProfilePage extends HookConsumerWidget {
     final genderKey = useState(GlobalKey<FormFieldState<String>>());
     final gender = useState(Gender.none);
 
-    final state = ref.watch(myAccountControllerProvider);
+    final state = ref.watch(fetchMyAccountProvider).asData?.value;
 
     useEffect(() {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (state.name != null) {
-          nameKey.value.currentState?.didChange(state.name);
+        if (state?.name != null) {
+          nameKey.value.currentState?.didChange(state?.name);
         }
       });
       return null;
@@ -70,9 +71,7 @@ class EditProfilePage extends HookConsumerWidget {
                     try {
                       final name =
                           nameKey.value.currentState?.value?.trim() ?? '';
-                      await ref
-                          .read(myAccountControllerProvider.notifier)
-                          .saveProfile(
+                      await ref.read(saveMyAccountProvider).call(
                             name: name.isNotEmpty ? name : '名無し',
                             gender: gender.value,
                           );
