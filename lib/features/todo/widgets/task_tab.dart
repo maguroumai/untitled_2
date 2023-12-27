@@ -9,7 +9,7 @@ import 'package:rxdart/subjects.dart';
 import 'package:untitled_2/core/custom_hooks/use_refresh_controller.dart';
 import 'package:untitled_2/core/router/router.dart';
 import 'package:untitled_2/core/widgets/smart_refresher_custom.dart';
-import 'package:untitled_2/features/todo/use_cases/task/my_task.dart';
+import 'package:untitled_2/features/todo/use_cases/task/task_controller.dart';
 import 'package:untitled_2/features/todo/widgets/task_item_tile.dart';
 
 final jumpTopScrollProvider =
@@ -26,8 +26,8 @@ class TaskTab extends HookConsumerWidget {
     final refreshController = useRefreshController();
     final isLoading = useState(false);
 
-    final controller = ref.watch(myTaskControllerProvider.notifier);
-    final asyncValue = ref.watch(myTaskControllerProvider);
+    final controller = ref.watch(taskControllerProvider.notifier);
+    final asyncValue = ref.watch(taskControllerProvider);
 
     useEffect(
       () {
@@ -62,7 +62,7 @@ class TaskTab extends HookConsumerWidget {
             controller: refreshController,
             physics: const BouncingScrollPhysics(),
             onRefresh: () {
-              ref.invalidate(myTaskControllerProvider);
+              ref.invalidate(taskControllerProvider);
               refreshController.refreshCompleted();
             },
             onLoading: () async {

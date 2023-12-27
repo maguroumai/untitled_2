@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'my_task.dart';
+part of 'task_controller.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -163,21 +163,21 @@ class _CollectionPagingRepositoryProviderElement
       (origin as CollectionPagingRepositoryProvider).query;
 }
 
-String _$myTaskControllerHash() => r'4cbc3a79d2b8ae4165583d03a667e103ad3151c4';
+String _$taskControllerHash() => r'e905b69a5ab79b9d3b44a2e5b82cbbf08134c8a6';
 
-/// See also [MyTaskController].
-@ProviderFor(MyTaskController)
-final myTaskControllerProvider =
-    AutoDisposeAsyncNotifierProvider<MyTaskController, List<Task>>.internal(
-  MyTaskController.new,
-  name: r'myTaskControllerProvider',
+/// See also [TaskController].
+@ProviderFor(TaskController)
+final taskControllerProvider =
+    AutoDisposeAsyncNotifierProvider<TaskController, List<Task>>.internal(
+  TaskController.new,
+  name: r'taskControllerProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$myTaskControllerHash,
+      : _$taskControllerHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef _$MyTaskController = AutoDisposeAsyncNotifier<List<Task>>;
+typedef _$TaskController = AutoDisposeAsyncNotifier<List<Task>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

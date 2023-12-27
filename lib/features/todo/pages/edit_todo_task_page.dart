@@ -2,9 +2,8 @@ import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:untitled_2/core/widgets/show_indicator.dart';
 import 'package:untitled_2/features/todo/entities/task/task.dart';
-import 'package:untitled_2/features/todo/use_cases/task/my_task.dart';
+import 'package:untitled_2/features/todo/use_cases/task/task_controller.dart';
 import 'package:untitled_2/features/todo/use_cases/task/task_observer_provider.dart';
 
 class EditTodoTaskPage extends HookConsumerWidget {
@@ -16,7 +15,7 @@ class EditTodoTaskPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final titleController = useTextEditingController(text: data.title);
     final commentController = useTextEditingController(text: data.comment);
-    final controller = ref.watch(myTaskControllerProvider.notifier);
+    final controller = ref.watch(taskControllerProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(
@@ -52,7 +51,6 @@ class EditTodoTaskPage extends HookConsumerWidget {
                         await controller.onRemove(taskId);
                         ref.read(taskObserverProvider).delete(data);
                         if (context.mounted) {
-                          dismissIndicator(context);
                           await showOkAlertDialog(
                             context: context,
                             title: '削除しました',
@@ -68,6 +66,9 @@ class EditTodoTaskPage extends HookConsumerWidget {
                             title: 'エラー',
                             message: e.toString(),
                           );
+                        }
+                        if (context.mounted) {
+                          Navigator.pop(context);
                         }
                       }
                     },

@@ -5,11 +5,13 @@ import 'package:untitled_2/core/repositories/firestore/collection_paging_reposit
 import 'package:untitled_2/core/repositories/firestore/document.dart';
 import 'package:untitled_2/core/repositories/firestore/document_repository.dart';
 import 'package:untitled_2/core/use_cases/authentication/auth_state_controller.dart';
+import 'package:untitled_2/core/utils/logger.dart';
 import 'package:untitled_2/features/todo/entities/accounts/account.dart'
     as todo;
 import 'package:untitled_2/features/todo/entities/task/task.dart';
+import 'package:untitled_2/features/todo/use_cases/task/task_observer_provider.dart';
 
-part 'my_task.g.dart';
+part 'task_controller.g.dart';
 
 @riverpod
 CollectionPagingRepository<Task> collectionPagingRepository(
@@ -24,11 +26,14 @@ CollectionPagingRepository<Task> collectionPagingRepository(
 }
 
 @riverpod
-class MyTaskController extends _$MyTaskController {
+class TaskController extends _$TaskController {
   static int get defaultLimit => 5;
 
   String? get _loggedInUserId =>
       ref.read(firebaseAuthRepositoryProvider).loggedInUserId;
+
+  DocumentRepository get _documentRepository =>
+      ref.read(documentRepositoryProvider);
 
   CollectionPagingRepository<Task>? _collectionPagingRepository;
 
@@ -77,6 +82,38 @@ class MyTaskController extends _$MyTaskController {
     }
   }
 
+  Future<void> onSave({required String title, required String comment}) async {
+    final userId = _loggedInUserId;
+    if (userId == null) {
+      logger.shout('userId is null');
+      return;
+    }
+
+    final docId = _documentRepository.docId;
+    final now = DateTime.now();
+    final value = await future;
+    final data = Task(
+      accountId: userId,
+      taskId: docId,
+      title: title,
+      isNotDone: true,
+      comment: comment,
+      createdAt: now,
+      updatedAt: now,
+    );
+    await _documentRepository.save(
+      todo.Account.taskCollectionDocPath(userId, docId),
+      data: data.toDoc(),
+    );
+    ref.watch(taskObserverProvider).create(data);
+    state = AsyncData(
+      [
+        data,
+        ...value,
+      ],
+    );
+  }
+
   Future<void> onUpdate(Task task) async {
     final userId = _loggedInUserId;
     final docId = task.taskId;
@@ -123,7 +160,8 @@ class MyTaskController extends _$MyTaskController {
             );
     if (newData != null) {
       state = AsyncData(
-          value.map((e) => e.taskId == data.taskId ? newData : e).toList());
+        value.map((e) => e.taskId == data.taskId ? newData : e).toList(),
+      );
     }
   }
 

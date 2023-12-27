@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:untitled_2/features/account/entities/gender.dart';
 import 'package:untitled_2/features/todo/entities/task/task.dart';
-import 'package:untitled_2/features/todo/use_cases/task/my_task.dart';
+import 'package:untitled_2/features/todo/use_cases/task/task_controller.dart';
 
 class TaskItemTile extends HookConsumerWidget {
   const TaskItemTile(
@@ -16,7 +16,7 @@ class TaskItemTile extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final controller = ref.watch(myTaskControllerProvider.notifier);
+    final controller = ref.watch(taskControllerProvider.notifier);
 
     return MaterialTapGesture(
       onTap: onTap,
